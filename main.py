@@ -9,7 +9,7 @@ def check_for_redirect(checked_response):
 
 
 def download_txt_book(book_id):
-    url = "https://tululu.org/txt.php"
+    url = 'https://tululu.org/txt.php'
 
     params = {
                 'id': book_id
