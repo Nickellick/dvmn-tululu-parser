@@ -1,5 +1,6 @@
 # Project-only gitignore
 media/
+*.svg
 
 
 # Byte-compiled / optimized / DLL files
