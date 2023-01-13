@@ -10,18 +10,27 @@ def check_for_redirect(checked_response):
             raise requests.HTTPError("Redirect! Probably book is not available")
 
 
-def download_txt_book(book_id):
+def download_book(book_id):
     url = 'https://tululu.org/txt.php'
+    
 
     params = {
                 'id': book_id
             }
-    response = requests.get(url, params=params)
+    
+    prereq = requests.models.PreparedRequest()
+    prereq.prepare_url(url, params)
+
+    full_url = prereq.url
+
+    # Checking is file exists
+    response = requests.get(full_url)
     response.raise_for_status()
     check_for_redirect(response)
-
-    return response.content
-
+    
+    meta_info = get_book_meta_info(book_id)
+    filename = f'{book_id}. {meta_info["title"]}'
+    return download_txt(full_url, filename)
 
 def get_book_meta_info(book_id):
     url = f'https://tululu.org/b{book_id}'
@@ -35,21 +44,16 @@ def get_book_meta_info(book_id):
 
     soup = BeautifulSoup(response.text, 'lxml')
 
-    title, author = soup.find('h1').text.split('::')
+    title, author = soup.find('td', class_='ow_px_td').find('h1').text.split('::')
     book_meta['title'] = title.strip()
     book_meta['author'] = author.strip()
 
     return book_meta
 
 
-def save_book(path, book_binary):
-    with open(path, 'wb') as book_file:
-            book_file.write(book_binary)
-
 def download_txt(url, filename, folder='books/'):
     response = requests.get(url)
     response.raise_for_status()
-    check_for_redirect(response)
 
     os.makedirs(folder, exist_ok=True)
 
@@ -62,16 +66,14 @@ def download_txt(url, filename, folder='books/'):
 
 
 def main():
-    url = 'https://tululu.org/txt.php?id=1'
+    book_ids = [_ for _ in range(1, 11)]
 
-    filepath = download_txt(url, 'Алиби')
-    print(filepath)  # Выведется books/Алиби.txt
+    for book_id in book_ids:
+        try:
+            download_book(book_id)
+        except requests.HTTPError:
+            continue
 
-    filepath = download_txt(url, 'Али/би', folder='books/')
-    print(filepath)  # Выведется books/Алиби.txt
-
-    filepath = download_txt(url, 'Али\\би', folder='txt/')
-    print(filepath)  # Выведется txt/Алиби.txt
 
 if __name__ == '__main__':
     main()
