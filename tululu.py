@@ -23,7 +23,7 @@ def download_txt_book(book_id):
     return response.content
 
 
-def book_meta_info(book_id):
+def get_book_meta_info(book_id):
     url = f'https://tululu.org/b{book_id}'
 
     book_meta = {
