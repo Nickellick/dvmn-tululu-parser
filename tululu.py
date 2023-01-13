@@ -1,6 +1,7 @@
 import os
 
 from bs4 import BeautifulSoup
+from pathvalidate import sanitize_filename
 import requests
 
 def check_for_redirect(checked_response):
@@ -45,14 +46,32 @@ def save_book(path, book_binary):
     with open(path, 'wb') as book_file:
             book_file.write(book_binary)
 
+def download_txt(url, filename, folder='books/'):
+    response = requests.get(url)
+    response.raise_for_status()
+    check_for_redirect(response)
+
+    os.makedirs(folder, exist_ok=True)
+
+    path = f'{os.path.join(folder, sanitize_filename(filename))}.txt'
+
+    with open(path, 'wb') as bookfile:
+        bookfile.write(response.content)
+    
+    return path
+
 
 def main():
-    try:
-        meta = book_meta_info(1)
-        print(f'Заголовок: {meta["title"]}')
-        print(f'Автор: {meta["author"]}')
-    except requests.HTTPError:
-        pass
+    url = 'https://tululu.org/txt.php?id=1'
+
+    filepath = download_txt(url, 'Алиби')
+    print(filepath)  # Выведется books/Алиби.txt
+
+    filepath = download_txt(url, 'Али/би', folder='books/')
+    print(filepath)  # Выведется books/Алиби.txt
+
+    filepath = download_txt(url, 'Али\\би', folder='txt/')
+    print(filepath)  # Выведется txt/Алиби.txt
 
 if __name__ == '__main__':
     main()
