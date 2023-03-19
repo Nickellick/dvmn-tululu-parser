@@ -1,5 +1,6 @@
 # Project-only gitignore
 books/
+txt/
 images/
 *.svg
 *.txt

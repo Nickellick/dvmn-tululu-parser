@@ -13,14 +13,12 @@ def check_for_redirect(checked_response):
 
 def download_book(book_id):
     url = 'https://tululu.org/txt.php'
-    
 
     check_book_for_exist(book_id)
-    
+
     meta_info = get_book_meta_info(book_id)
     filename = f'{book_id}. {meta_info["title"]}'
     return download_txt(build_book_url(), filename)
-
 
 
 def get_book_meta_info(book_id):
@@ -112,13 +110,22 @@ def download_txt(url, filename, folder='books/'):
 
 
 def main():
-    book_ids = [_ for _ in range(1, 11)]
+    # book_ids = [_ for _ in range(1, 11)]
 
-    for book_id in book_ids:
-        try:
-            print(get_book_cover(book_id))
-        except requests.HTTPError:
-            continue
+    # for book_id in book_ids:
+    #     try:
+    #         print(get_book_cover(book_id))
+    #     except requests.HTTPError:
+    #         continue
+    url = 'http://tululu.org/txt.php?id=1'
+    filepath = download_txt(url, 'Алиби')
+    print(filepath)
+
+    filepath = download_txt(url, 'Али/би', folder='books/')
+    print(filepath)
+
+    filepath = download_txt(url, 'Али\\би', folder='txt/')
+    print(filepath)
 
 
 if __name__ == '__main__':
