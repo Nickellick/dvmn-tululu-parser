@@ -81,6 +81,38 @@ def get_book_cover(book_id):
     return download_image(link, filename)
 
 
+def get_comments(response):
+    soup = BeautifulSoup(response.content, 'lxml')
+    comments = []
+    raw_comments = soup.find_all('div', class_='texts')
+    for raw_comment in raw_comments:
+        comment = {}
+        author = raw_comment.find('b').text
+        text = raw_comment.find('span', class_='black').text
+        comment['author'] = author
+        comment['text'] = text
+        comments.append(comment)
+    return comments
+
+
+def download_comments(url, filename, folder='comments/'):
+    response = requests.get(url)
+    response.raise_for_status()
+
+    os.makedirs(folder, exist_ok=True)
+
+    path = f'{os.path.join(folder, sanitize_filename(filename))}'
+
+    comments = get_comments(response)
+
+    with open(path, 'w') as commentfile:
+        for comment in comments:
+            commentfile.write(f'Author: {comment["author"]}\n')
+            commentfile.write(f'Text: {comment["text"]}\n\n')
+    
+    return path
+
+
 def download_image(url, filename, folder='images/'):
     response = requests.get(url)
     response.raise_for_status()
@@ -117,15 +149,15 @@ def main():
     #         print(get_book_cover(book_id))
     #     except requests.HTTPError:
     #         continue
-    url = 'http://tululu.org/txt.php?id=1'
-    filepath = download_txt(url, 'Алиби')
-    print(filepath)
 
-    filepath = download_txt(url, 'Али/би', folder='books/')
-    print(filepath)
-
-    filepath = download_txt(url, 'Али\\би', folder='txt/')
-    print(filepath)
+    for book_id in range(1, 11):
+        url = f'https://tululu.org/b{book_id}'
+        try:
+            check_book_for_exist(book_id)
+        except requests.HTTPError:
+            continue
+        filepath = download_comments(url, f'{book_id}')
+        print(filepath)
 
 
 if __name__ == '__main__':
