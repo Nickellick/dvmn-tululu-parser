@@ -21,13 +21,13 @@ def download_book(book_id):
     return download_txt(build_book_url(), filename)
 
 
-def get_book_meta_info(book_id):
+def get_book_meta_info(page):
     book_meta = {
                 'author': None,
                 'title': None
             }
 
-    soup = BeautifulSoup(get_book_html(book_id), 'lxml')
+    soup = BeautifulSoup(page, 'lxml')
 
     title, author = soup.find('td', class_='ow_px_td').find('h1').text.split('::')
     book_meta['title'] = title.strip()
@@ -81,8 +81,8 @@ def get_book_cover(book_id):
     return download_image(link, filename)
 
 
-def get_comments(response):
-    soup = BeautifulSoup(response.content, 'lxml')
+def get_comments(page):
+    soup = BeautifulSoup(page, 'lxml')
     comments = []
     raw_comments = soup.find_all('div', class_='texts')
     for raw_comment in raw_comments:
@@ -95,8 +95,8 @@ def get_comments(response):
     return comments
 
 
-def get_genres(response):
-    soup = BeautifulSoup(response.content, 'lxml')
+def get_genres(page):
+    soup = BeautifulSoup(page, 'lxml')
     genres = []
     raw_genres = soup.find('span', class_='d_book').find_all('a')
     for raw_genre in raw_genres:
@@ -157,6 +157,23 @@ def download_txt(url, filename, folder='books/'):
     return path
 
 
+def parse_book_page(page):
+    book = {}
+    book['genres'] = get_genres(page)
+    book['comments'] = get_comments(page)
+    book_meta = get_book_meta_info(page)
+    book['author'] = book_meta['author']
+    book['title'] = book_meta['title']
+    return book
+
+
+def get_html(url):
+    response = requests.get(url)
+    response.raise_for_status()
+
+    return response.text
+
+
 def main():
     # book_ids = [_ for _ in range(1, 11)]
 
@@ -172,7 +189,13 @@ def main():
             check_book_for_exist(book_id)
         except requests.HTTPError:
             continue
-        print_genres(url)
+        book_meta = parse_book_page(get_html(url))
+
+        print(f'Author: {book_meta["author"]}')
+        print(f'Title: {book_meta["title"]}')
+        print(f'Genres: {", ".join(book_meta["genres"])}')
+        print(f'Comments: {book_meta["comments"]}')
+        print('\n\n')
 
 if __name__ == '__main__':
     main()
