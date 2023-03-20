@@ -95,6 +95,22 @@ def get_comments(response):
     return comments
 
 
+def get_genres(response):
+    soup = BeautifulSoup(response.content, 'lxml')
+    genres = []
+    raw_genres = soup.find('span', class_='d_book').find_all('a')
+    for raw_genre in raw_genres:
+        genres.append(raw_genre.text)
+    return genres
+
+
+def print_genres(url):
+    response = requests.get(url)
+    response.raise_for_status()
+
+    print(get_genres(response))
+
+
 def download_comments(url, filename, folder='comments/'):
     response = requests.get(url)
     response.raise_for_status()
@@ -156,9 +172,7 @@ def main():
             check_book_for_exist(book_id)
         except requests.HTTPError:
             continue
-        filepath = download_comments(url, f'{book_id}')
-        print(filepath)
-
+        print_genres(url)
 
 if __name__ == '__main__':
     main()
