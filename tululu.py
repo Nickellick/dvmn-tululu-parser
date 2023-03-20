@@ -1,9 +1,18 @@
+import argparse
 import os
 
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 import requests
 from urllib.parse import unquote, urljoin, urlsplit
+
+
+def init_argparse():
+    parser = argparse.ArgumentParser(description='Tululu.org parser')
+    parser.add_argument('start_id', type=int, help='Start book id')
+    parser.add_argument('end_id', type=int, help='Stop book id (including)')
+    return parser.parse_args()
+
 
 def check_for_redirect(checked_response):
     for response in checked_response.history:
@@ -182,8 +191,8 @@ def main():
     #         print(get_book_cover(book_id))
     #     except requests.HTTPError:
     #         continue
-
-    for book_id in range(1, 11):
+    args = init_argparse()
+    for book_id in range(args.start_id, args.end_id + 1):
         url = f'https://tululu.org/b{book_id}'
         try:
             check_book_for_exist(book_id)
