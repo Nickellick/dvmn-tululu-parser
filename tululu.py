@@ -4,7 +4,7 @@ import os
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 import requests
-from urllib.parse import unquote, urljoin, urlsplit
+from urllib.parse import urljoin
 
 
 def init_argparse():
@@ -17,17 +17,9 @@ def init_argparse():
 def check_for_redirect(checked_response):
     for response in checked_response.history:
         if response.status_code >= 300 and response.status_code < 400:
-            raise requests.HTTPError("Redirect! Probably book is not available")
-
-
-def download_book(book_id):
-    url = 'https://tululu.org/txt.php'
-
-    check_book_for_exist(book_id)
-
-    meta_info = get_book_meta_info(book_id)
-    filename = f'{book_id}. {meta_info["title"]}'
-    return download_txt(build_book_url(), filename)
+            raise requests.HTTPError(
+                "Redirect! Probably book is not available"
+                )
 
 
 def get_book_meta_info(page):
@@ -38,56 +30,19 @@ def get_book_meta_info(page):
 
     soup = BeautifulSoup(page, 'lxml')
 
-    title, author = soup.find('td', class_='ow_px_td').find('h1').text.split('::')
+    title, author = soup.find('td', class_='ow_px_td')\
+        .find('h1').text.split('::')
     book_meta['title'] = title.strip()
     book_meta['author'] = author.strip()
 
     return book_meta
 
 
-def get_book_html(book_id):
-    check_book_for_exist(book_id)
-    url = f'https://tululu.org/b{book_id}'
-
-    response = requests.get(url)
-    response.raise_for_status()
-
-    return response.text
-
-
-def build_book_url(book_id):
-    url = 'https://tululu.org/txt.php'
-    
-
-    params = {
-                'id': book_id
-            }
-    
-    prereq = requests.models.PreparedRequest()
-    prereq.prepare_url(url, params)
-
-    return prereq.url
-
-
-def check_book_for_exist(book_id):
-    response = requests.get(build_book_url(book_id))
-    response.raise_for_status()
-    check_for_redirect(response)
-
-
-def get_book_cover_link(book_id):
-    soup = BeautifulSoup(get_book_html(book_id), 'lxml')
-
+def get_book_cover_link(page):
+    soup = BeautifulSoup(page, 'lxml')
     img_rel_link = soup.find('div', class_='bookimage').find('img')['src']
     img_abs_link = urljoin('https://tululu.org/', img_rel_link)
     return img_abs_link
-
-
-def get_book_cover(book_id):
-    link = unquote(get_book_cover_link(book_id))
-    filename = os.path.basename(urlsplit(link).path)
-
-    return download_image(link, filename)
 
 
 def get_comments(page):
@@ -134,7 +89,7 @@ def download_comments(url, filename, folder='comments/'):
         for comment in comments:
             commentfile.write(f'Author: {comment["author"]}\n')
             commentfile.write(f'Text: {comment["text"]}\n\n')
-    
+
     return path
 
 
@@ -148,7 +103,7 @@ def download_image(url, filename, folder='images/'):
 
     with open(path, 'wb') as imgfile:
         imgfile.write(response.content)
-    
+
     return path
 
 
@@ -162,7 +117,7 @@ def download_txt(url, filename, folder='books/'):
 
     with open(path, 'wb') as bookfile:
         bookfile.write(response.content)
-    
+
     return path
 
 
@@ -179,32 +134,27 @@ def parse_book_page(page):
 def get_html(url):
     response = requests.get(url)
     response.raise_for_status()
+    check_for_redirect(response)
 
     return response.text
 
 
 def main():
-    # book_ids = [_ for _ in range(1, 11)]
-
-    # for book_id in book_ids:
-    #     try:
-    #         print(get_book_cover(book_id))
-    #     except requests.HTTPError:
-    #         continue
     args = init_argparse()
     for book_id in range(args.start_id, args.end_id + 1):
-        url = f'https://tululu.org/b{book_id}'
+        url = f'https://tululu.org/b{book_id}/'
         try:
-            check_book_for_exist(book_id)
+            page = get_html(url)
         except requests.HTTPError:
             continue
-        book_meta = parse_book_page(get_html(url))
+        book_meta = parse_book_page(page)
 
         print(f'Author: {book_meta["author"]}')
         print(f'Title: {book_meta["title"]}')
         print(f'Genres: {", ".join(book_meta["genres"])}')
         print(f'Comments: {book_meta["comments"]}')
         print('\n\n')
+
 
 if __name__ == '__main__':
     main()
