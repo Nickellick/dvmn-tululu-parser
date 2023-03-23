@@ -15,11 +15,10 @@ def init_argparse():
 
 
 def check_for_redirect(checked_response):
-    for response in checked_response.history:
-        if response.status_code >= 300 and response.status_code < 400:
-            raise requests.HTTPError(
-                "Redirect! Probably book is not available"
-                )
+    if checked_response.history:
+        raise requests.HTTPError(
+            "Redirect! Probably book is not available"
+            )
 
 
 def get_book_meta_info(page):
