@@ -58,31 +58,6 @@ def get_genres(page_soup):
     return genres
 
 
-def print_genres(url):
-    response = requests.get(url)
-    response.raise_for_status()
-
-    print(get_genres(response))
-
-
-def download_comments(url, filename, folder='comments/'):
-    response = requests.get(url)
-    response.raise_for_status()
-
-    os.makedirs(folder, exist_ok=True)
-
-    path = f'{os.path.join(folder, sanitize_filename(filename))}'
-
-    comments = get_comments(response)
-
-    with open(path, 'w') as commentfile:
-        for comment in comments:
-            commentfile.write(f'Author: {comment["author"]}\n')
-            commentfile.write(f'Text: {comment["text"]}\n\n')
-
-    return path
-
-
 def download_image(url, filename, folder='images/'):
     response = requests.get(url)
     response.raise_for_status()
