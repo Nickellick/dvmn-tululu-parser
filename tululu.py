@@ -23,7 +23,7 @@ def check_for_redirect(checked_response):
             )
 
 
-def get_book_meta_info(page_soup):
+def get_book(page_soup):
     book = {
                 'author': None,
                 'title': None
@@ -119,7 +119,7 @@ def download_txt(url, filename, folder='books/'):
 
 def parse_book_page(page):
     page_soup = BeautifulSoup(page, 'lxml')
-    book_meta = get_book_meta_info(page_soup)
+    book_meta = get_book(page_soup)
     book = {
         'genres': get_genres(page_soup),
         'comments': get_comments(page_soup),
