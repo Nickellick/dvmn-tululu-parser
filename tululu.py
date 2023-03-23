@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
@@ -138,6 +139,10 @@ def get_html(url):
     return response.text
 
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+
 def main():
     args = init_argparse()
     for book_id in range(args.start_id, args.end_id + 1):
@@ -145,7 +150,7 @@ def main():
         try:
             page = get_html(url)
         except requests.HTTPError:
-            continue
+            eprint(f'Error! Can\'t find book with id {book_id}\n\n')
         book_meta = parse_book_page(page)
 
         print(f'Author: {book_meta["author"]}')
