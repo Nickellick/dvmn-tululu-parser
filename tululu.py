@@ -123,12 +123,13 @@ def download_txt(url, filename, folder='books/'):
 
 
 def parse_book_page(page):
-    book = {}
-    book['genres'] = get_genres(page)
-    book['comments'] = get_comments(page)
     book_meta = get_book_meta_info(page)
-    book['author'] = book_meta['author']
-    book['title'] = book_meta['title']
+    book = {
+        'genres': get_genres(page),
+        'comments': get_comments(page),
+        'author': book_meta['author'],
+        'title': book_meta['title']
+    }
     return book
 
 
@@ -166,10 +167,10 @@ def main():
             continue
 
         book = parse_book_page(page)
-        print(f'Author: {book_meta["author"]}')
-        print(f'Title: {book_meta["title"]}')
-        print(f'Genres: {", ".join(book_meta["genres"])}')
-        print(f'Comments: {book_meta["comments"]}')
+        print(f'Author: {book["author"]}')
+        print(f'Title: {book["title"]}')
+        print(f'Genres: {", ".join(book["genres"])}')
+        print(f'Comments: {book["comments"]}')
         print('\n\n')
 
 
