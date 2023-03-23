@@ -32,9 +32,9 @@ def get_book(page_soup):
     return title, author
 
 
-def get_book_cover_link(page_soup):
+def get_book_cover_link(base_url, page_soup):
     img_rel_link = page_soup.find('div', class_='bookimage').find('img')['src']
-    img_abs_link = urljoin('https://tululu.org/', img_rel_link)
+    img_abs_link = urljoin(base_url, img_rel_link)
     return img_abs_link
 
 
@@ -78,7 +78,7 @@ def download_image(url, filename, folder='images/'):
 def download_txt(url, filename, folder='books/'):
     response = requests.get(url)
     response.raise_for_status()
-    check_for_redirect()
+    check_for_redirect(response)
 
     os.makedirs(folder, exist_ok=True)
 
@@ -90,13 +90,13 @@ def download_txt(url, filename, folder='books/'):
     return path
 
 
-def parse_book_page(page):
+def parse_book_page(base_url, page):
     page_soup = BeautifulSoup(page, 'lxml')
     title, author = get_book(page_soup)
     book = {
         'genres': get_genres(page_soup),
         'comments': get_comments(page_soup),
-        'cover': get_book_cover_link(page_soup),
+        'cover': get_book_cover_link(base_url, page_soup),
         'author': author,
         'title': title
     }
@@ -117,9 +117,10 @@ def eprint(*args, **kwargs):
 
 def main():
     args = init_argparse()
+    base_url = 'https://tululu.org'
     for book_id in range(args.start_id, args.end_id + 1):
         id_exists = True
-        url = f'https://tululu.org/b{book_id}/'
+        url = urljoin(base_url, f'https://tululu.org/b{book_id}/')
 
         while True:
             try:
@@ -135,8 +136,8 @@ def main():
                 break
         if not id_exists:
             continue
-        
-        book = parse_book_page(page)
+
+        book = parse_book_page(base_url, page)
         download_txt(url, f'{book_id}. {book["title"]}')
         download_image(book['cover'], str(book_id))
         print(f'Author: {book["author"]}')
