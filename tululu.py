@@ -62,10 +62,8 @@ def get_comments(page):
 
 def get_genres(page):
     soup = BeautifulSoup(page, 'lxml')
-    genres = []
-    raw_genres = soup.find('span', class_='d_book').find_all('a')
-    for raw_genre in raw_genres:
-        genres.append(raw_genre.text)
+    genres = [genre.text
+              for genre in soup.find('span', class_='d_book').find_all('a')]
     return genres
 
 
