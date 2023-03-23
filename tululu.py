@@ -78,6 +78,7 @@ def download_image(url, filename, folder='images/'):
 def download_txt(url, filename, folder='books/'):
     response = requests.get(url)
     response.raise_for_status()
+    check_for_redirect()
 
     os.makedirs(folder, exist_ok=True)
 
