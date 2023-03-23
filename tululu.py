@@ -23,15 +23,13 @@ def check_for_redirect(checked_response):
             )
 
 
-def get_book_meta_info(page):
+def get_book_meta_info(page_soup):
     book = {
                 'author': None,
                 'title': None
             }
 
-    soup = BeautifulSoup(page, 'lxml')
-
-    title, author = soup.find('td', class_='ow_px_td')\
+    title, author = page_soup.find('td', class_='ow_px_td')\
         .find('h1').text.split('::')
     book['title'] = title.strip()
     book['author'] = author.strip()
@@ -46,10 +44,9 @@ def get_book_cover_link(page):
     return img_abs_link
 
 
-def get_comments(page):
-    soup = BeautifulSoup(page, 'lxml')
+def get_comments(page_soup):
     comments = []
-    raw_comments = soup.find_all('div', class_='texts')
+    raw_comments = page_soup.find_all('div', class_='texts')
     for raw_comment in raw_comments:
         comment = {}
         author = raw_comment.find('b').text
@@ -60,10 +57,10 @@ def get_comments(page):
     return comments
 
 
-def get_genres(page):
-    soup = BeautifulSoup(page, 'lxml')
+def get_genres(page_soup):
     genres = [genre.text
-              for genre in soup.find('span', class_='d_book').find_all('a')]
+              for genre in
+              page_soup.find('span', class_='d_book').find_all('a')]
     return genres
 
 
@@ -121,10 +118,11 @@ def download_txt(url, filename, folder='books/'):
 
 
 def parse_book_page(page):
-    book_meta = get_book_meta_info(page)
+    page_soup = BeautifulSoup(page, 'lxml')
+    book_meta = get_book_meta_info(page_soup)
     book = {
-        'genres': get_genres(page),
-        'comments': get_comments(page),
+        'genres': get_genres(page_soup),
+        'comments': get_comments(page_soup),
         'author': book_meta['author'],
         'title': book_meta['title']
     }
