@@ -24,17 +24,12 @@ def check_for_redirect(checked_response):
 
 
 def get_book(page_soup):
-    book = {
-                'author': None,
-                'title': None
-            }
-
     title, author = page_soup.find('td', class_='ow_px_td')\
         .find('h1').text.split('::')
-    book['title'] = title.strip()
-    book['author'] = author.strip()
+    title = title.strip()
+    author = author.strip()
 
-    return book
+    return title, author
 
 
 def get_book_cover_link(page):
@@ -119,12 +114,12 @@ def download_txt(url, filename, folder='books/'):
 
 def parse_book_page(page):
     page_soup = BeautifulSoup(page, 'lxml')
-    book_meta = get_book(page_soup)
+    title, author = get_book(page_soup)
     book = {
         'genres': get_genres(page_soup),
         'comments': get_comments(page_soup),
-        'author': book_meta['author'],
-        'title': book_meta['title']
+        'author': author,
+        'title': title
     }
     return book
 
