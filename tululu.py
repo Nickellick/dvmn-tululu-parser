@@ -24,7 +24,7 @@ def check_for_redirect(checked_response):
 
 
 def get_book_meta_info(page):
-    book_meta = {
+    book = {
                 'author': None,
                 'title': None
             }
@@ -33,10 +33,10 @@ def get_book_meta_info(page):
 
     title, author = soup.find('td', class_='ow_px_td')\
         .find('h1').text.split('::')
-    book_meta['title'] = title.strip()
-    book_meta['author'] = author.strip()
+    book['title'] = title.strip()
+    book['author'] = author.strip()
 
-    return book_meta
+    return book
 
 
 def get_book_cover_link(page):
@@ -165,7 +165,7 @@ def main():
         if not id_exists:
             continue
 
-        book_meta = parse_book_page(page)
+        book = parse_book_page(page)
         print(f'Author: {book_meta["author"]}')
         print(f'Title: {book_meta["title"]}')
         print(f'Genres: {", ".join(book_meta["genres"])}')
