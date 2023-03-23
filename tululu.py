@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import time
 
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
@@ -146,13 +147,25 @@ def eprint(*args, **kwargs):
 def main():
     args = init_argparse()
     for book_id in range(args.start_id, args.end_id + 1):
+        id_exists = True
         url = f'https://tululu.org/b{book_id}/'
-        try:
-            page = get_html(url)
-        except requests.HTTPError:
-            eprint(f'Error! Can\'t find book with id {book_id}\n\n')
-        book_meta = parse_book_page(page)
 
+        while True:
+            try:
+                page = get_html(url)
+                break
+            except requests.exceptions.ConnectionError:
+                eprint('Error! Can\'t reach server. Trying again...')
+                time.sleep(5)
+                continue
+            except requests.HTTPError:
+                eprint(f'Error! Can\'t find book with id {book_id}\n\n')
+                id_exists = False
+                break
+        if not id_exists:
+            continue
+
+        book_meta = parse_book_page(page)
         print(f'Author: {book_meta["author"]}')
         print(f'Title: {book_meta["title"]}')
         print(f'Genres: {", ".join(book_meta["genres"])}')
