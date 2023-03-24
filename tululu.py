@@ -125,10 +125,16 @@ def main():
     for book_id in range(args.start_id, args.end_id + 1):
         id_exists = True
         url = urljoin(base_url, f'https://tululu.org/b{book_id}/')
-
+        dl_txt_link = build_url(
+            base_url + 'txt.php',
+            {'id': book_id}
+        )
         while True:
             try:
                 page = get_html(url)
+                book = parse_book_page(base_url, page)
+                download_txt(dl_txt_link, f'{book_id}. {book["title"]}')
+                download_image(book['cover'], str(book_id))
                 break
             except requests.exceptions.ConnectionError:
                 eprint('Error! Can\'t reach server. Trying again...')
@@ -140,14 +146,7 @@ def main():
                 break
         if not id_exists:
             continue
-
-        book = parse_book_page(base_url, page)
-        dl_txt_link = build_url(
-            base_url + 'txt.php',
-            {'id': book_id}
-        )
-        download_txt(dl_txt_link, f'{book_id}. {book["title"]}')
-        download_image(book['cover'], str(book_id))
+ 
         print(f'Author: {book["author"]}')
         print(f'Title: {book["title"]}')
         print(f'Genres: {", ".join(book["genres"])}')
