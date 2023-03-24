@@ -6,7 +6,7 @@ import time
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 import requests
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlencode, urljoin, urlparse
 
 
 def init_argparse():
@@ -30,6 +30,10 @@ def get_book(page_soup):
     author = author.strip()
 
     return title, author
+
+
+def build_url(base_url, params):
+    return f'{base_url}?{urlencode(params)}'
 
 
 def get_book_cover_link(base_url, page_soup):
@@ -117,7 +121,7 @@ def eprint(*args, **kwargs):
 
 def main():
     args = init_argparse()
-    base_url = 'https://tululu.org'
+    base_url = 'https://tululu.org/'
     for book_id in range(args.start_id, args.end_id + 1):
         id_exists = True
         url = urljoin(base_url, f'https://tululu.org/b{book_id}/')
@@ -138,7 +142,11 @@ def main():
             continue
 
         book = parse_book_page(base_url, page)
-        download_txt(url, f'{book_id}. {book["title"]}')
+        dl_txt_link = build_url(
+            base_url + 'txt.php',
+            {'id': book_id}
+        )
+        download_txt(dl_txt_link, f'{book_id}. {book["title"]}')
         download_image(book['cover'], str(book_id))
         print(f'Author: {book["author"]}')
         print(f'Title: {book["title"]}')
