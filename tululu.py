@@ -115,10 +115,6 @@ def get_html(url):
     return response.text
 
 
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
-
-
 def main():
     args = init_argparse()
     base_url = 'https://tululu.org/'
@@ -137,11 +133,17 @@ def main():
                 download_image(book['cover'], str(book_id))
                 break
             except requests.exceptions.ConnectionError:
-                eprint('Error! Can\'t reach server. Trying again...')
+                print(
+                    'Error! Can\'t reach server. Trying again...',
+                    file=sys.stderr
+                )
                 time.sleep(5)
                 continue
             except requests.HTTPError:
-                eprint(f'Error! Can\'t find book with id {book_id}\n\n')
+                print(
+                    f'Error! Can\'t find book with id {book_id}\n\n',
+                    file=sys.stderr
+                )
                 id_exists = False
                 break
         if not id_exists:
