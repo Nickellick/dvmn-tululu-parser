@@ -36,9 +36,9 @@ def build_url(base_url, params):
     return f'{base_url}?{urlencode(params)}'
 
 
-def get_book_cover_link(base_url, page_soup):
+def get_book_cover_link(book_url, page_soup):
     img_rel_link = page_soup.find('div', class_='bookimage').find('img')['src']
-    img_abs_link = urljoin(base_url, img_rel_link)
+    img_abs_link = urljoin(book_url, img_rel_link)
     return img_abs_link
 
 
@@ -120,7 +120,7 @@ def main():
     base_url = 'https://tululu.org/'
     for book_id in range(args.start_id, args.end_id + 1):
         id_exists = True
-        url = urljoin(base_url, f'https://tululu.org/b{book_id}/')
+        url = urljoin(base_url, f'/b{book_id}/')
         dl_txt_link = build_url(
             base_url + 'txt.php',
             {'id': book_id}
@@ -128,7 +128,7 @@ def main():
         while True:
             try:
                 page = get_html(url)
-                book = parse_book_page(base_url, page)
+                book = parse_book_page(url, page)
                 download_txt(dl_txt_link, f'{book_id}. {book["title"]}')
                 download_image(book['cover'], str(book_id))
                 break
