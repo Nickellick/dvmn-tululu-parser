@@ -121,10 +121,10 @@ def main():
     for book_id in range(args.start_id, args.end_id + 1):
         id_exists = True
         url = urljoin(base_url, f'/b{book_id}/')
-        dl_txt_link = build_url(
-            f'{base_url}txt.php',
-            {'id': book_id}
-        )
+        params = {
+            'id': book_id
+        }
+        dl_txt_link = f'{base_url}txt.php?{urlencode(params)}'
         while True:
             try:
                 page = get_html(url)
