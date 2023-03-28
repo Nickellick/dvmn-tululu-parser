@@ -122,7 +122,7 @@ def main():
         id_exists = True
         url = urljoin(base_url, f'/b{book_id}/')
         dl_txt_link = build_url(
-            base_url + 'txt.php',
+            f'{base_url}txt.php',
             {'id': book_id}
         )
         while True:
