@@ -32,10 +32,6 @@ def get_book(page_soup):
     return title, author
 
 
-def build_url(base_url, params):
-    return f'{base_url}?{urlencode(params)}'
-
-
 def get_book_cover_link(book_url, page_soup):
     img_rel_link = page_soup.find('div', class_='bookimage').find('img')['src']
     img_abs_link = urljoin(book_url, img_rel_link)
