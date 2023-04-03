@@ -4,6 +4,7 @@ books/
 comments/
 txt/
 images/
+json/
 *.svg
 *.txt
 
