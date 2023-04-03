@@ -1,24 +1,92 @@
+import os
+import json
+import sys
+import time
+
 from bs4 import BeautifulSoup
+import requests
 from urllib.parse import urljoin
 
-from tululu import get_html
+from tululu import download_image, download_txt, get_html, parse_book_page
 
 
 def main():
-    category_url = 'https://tululu.org/l55/'
-    for page_num in range(1, 11):
-        if page_num == 1:
-            html = get_html(category_url)
-        else:
-            html = get_html(urljoin(category_url, f'{page_num}'))
-        soup = BeautifulSoup(html, 'lxml')
-        rel_links = [i.find('a')['href']
-                     for i in soup.find_all('table', class_='d_book')]
-        abs_links = [urljoin('https://tululu.org', rel_link)
-                     for rel_link in rel_links]
+    base_url = 'https://tululu.org/'
+    category_url = urljoin(base_url, 'l55/')
+    for page_num in range(1, 5):
+        page_exists = True
+        while True:
+            try:
+                if page_num == 1:
+                    html = get_html(category_url)
+                else:
+                    html = get_html(urljoin(category_url, f'{page_num}'))
+                soup = BeautifulSoup(html, 'lxml')
+                rel_links = [i.find('a')['href']
+                             for i in soup.find_all('table', class_='d_book')]
+                abs_links = [urljoin(base_url, rel_link)
+                             for rel_link in rel_links]
+                break
+            except requests.exceptions.ConnectionError:
+                print(
+                    f'Error while fetching category page #{page_num}!\n'\
+                    'Can\'t reach server. Trying again...',
+                    file=sys.stderr
+                )
+                time.sleep(5)
+                continue
+            except requests.exceptions.HTTPError:
+                print(
+                    f'Error while fetching category page #{page_num}!\n'\
+                    'Page does not exists. Skipping...',
+                    file=sys.stderr
+                )
+                page_exists = False
+                break
+        if not page_exists:
+            continue
         for link in abs_links:
-            print(link)
-
+            id_exists = True
+            book_id = link.split('/')[-2][1::]
+            txt_url = urljoin(base_url, 'txt.php')
+            params = {
+                'id': book_id
+            }
+            prep_req = requests.models.PreparedRequest()
+            prep_req.prepare_url(txt_url, params)
+            dl_txt_link = prep_req.url
+            while True:
+                try:
+                    page = get_html(link)
+                    book = parse_book_page(link, page)
+                    download_txt(dl_txt_link, f'{book_id}. {book["title"]}')
+                    download_image(book['cover'], str(book_id))
+                    break
+                except requests.exceptions.ConnectionError:
+                    print(
+                        f'Error while fetching book #{book_id}!\n'
+                        'Can\'t reach server. Trying again...',
+                        file=sys.stderr
+                    )
+                    time.sleep(5)
+                    continue
+                except requests.HTTPError:
+                    print(
+                        f'Error while fetching book #{book_id}!\n'
+                        'Book does not exists. Skipping...',
+                        file=sys.stderr
+                    )
+                    id_exists = False
+                    break
+            if not id_exists:
+                continue
+            book.pop('cover')
+            json_folder = 'json'
+            os.makedirs(json_folder, exist_ok=True)
+            path = os.path.join(json_folder, f'{book_id}.json')
+            with open(path, 'w', encoding='utf-8') as bookfile:
+                json.dump(book, bookfile, ensure_ascii=False, indent=2)
+            print(f'Succesfully downloaded book #{book_id}')
 
 if __name__ == '__main__':
     main()

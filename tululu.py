@@ -118,12 +118,7 @@ def main():
         id_exists = True
         url = urljoin(base_url, f'/b{book_id}/')
         txt_url = urljoin(base_url, 'txt.php')
-        params = {
-            'id': book_id
-        }
-        prep_req = requests.models.PreparedRequest()
-        prep_req.prepare_url(txt_url, params)
-        dl_txt_link = prep_req.url
+        
         while True:
             try:
                 page = get_html(url)
