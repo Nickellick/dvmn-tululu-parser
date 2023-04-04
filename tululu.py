@@ -24,8 +24,9 @@ def check_for_redirect(checked_response):
 
 
 def get_book(page_soup):
-    title, author = page_soup.find('td', class_='ow_px_td')\
-        .find('h1').text.split('::')
+    selector = '.ow_px_td h1'
+    title, author = page_soup.select_one(selector)\
+        .text.split('::')
     title = title.strip()
     author = author.strip()
 
@@ -33,18 +34,22 @@ def get_book(page_soup):
 
 
 def get_book_cover_link(book_url, page_soup):
-    img_rel_link = page_soup.find('div', class_='bookimage').find('img')['src']
+    selector = '.bookimage img'
+    img_rel_link = page_soup.select_one(selector)['src']
     img_abs_link = urljoin(book_url, img_rel_link)
     return img_abs_link
 
 
 def get_comments(page_soup):
     comments = []
-    raw_comments = page_soup.find_all('div', class_='texts')
+    comments_selector = '.texts'
+    author_selector = 'b'
+    text_selector = '.black'
+    raw_comments = page_soup.select(comments_selector)
     for raw_comment in raw_comments:
         comment = {}
-        author = raw_comment.find('b').text
-        text = raw_comment.find('span', class_='black').text
+        author = raw_comment.select_one(author_selector).text
+        text = raw_comment.select_one(text_selector).text
         comment['author'] = author
         comment['text'] = text
         comments.append(comment)
@@ -52,9 +57,11 @@ def get_comments(page_soup):
 
 
 def get_genres(page_soup):
+    book_selector = 'span.d_book'
+    genre_selector = 'a'
     genres = [genre.text
               for genre in
-              page_soup.find('span', class_='d_book').find_all('a')]
+              page_soup.select_one(book_selector).select(genre_selector)]
     return genres
 
 
@@ -118,7 +125,12 @@ def main():
         id_exists = True
         url = urljoin(base_url, f'/b{book_id}/')
         txt_url = urljoin(base_url, 'txt.php')
-        
+        params = {
+            'id': book_id
+        }
+        prep_req = requests.models.PreparedRequest()
+        prep_req.prepare_url(txt_url, params)
+        dl_txt_link = prep_req.url
         while True:
             try:
                 page = get_html(url)
