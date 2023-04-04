@@ -22,8 +22,10 @@ def main():
                 else:
                     html = get_html(urljoin(category_url, f'{page_num}'))
                 soup = BeautifulSoup(html, 'lxml')
-                rel_links = [i.find('a')['href']
-                             for i in soup.find_all('table', class_='d_book')]
+                books_selector = '.d_book'
+                link_selector = 'a'
+                rel_links = [i.select_one(link_selector)['href']
+                             for i in soup.select(books_selector)]
                 abs_links = [urljoin(base_url, rel_link)
                              for rel_link in rel_links]
                 break
