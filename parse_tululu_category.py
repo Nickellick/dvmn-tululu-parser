@@ -1,5 +1,6 @@
-import os
+import argparse
 import json
+import os
 import sys
 import time
 
@@ -10,10 +11,27 @@ from urllib.parse import urljoin
 from tululu import download_image, download_txt, get_html, parse_book_page
 
 
+def init_argparse():
+    parser = argparse.ArgumentParser(description='Tululu.org parser')
+    parser.add_argument('--start_page', type=int, help='Start book id')
+    parser.add_argument('--end_page', type=int, help='Stop book id (including)')
+    return parser.parse_args()
+
+
 def main():
+    last_page = 701
+    args = init_argparse()
+    if not args.start_page:
+        print('Start id is not specified', file=sys.stderr)
+        exit(1)
+    start_page = args.start_page
+    if not args.end_page:
+        end_page = last_page + 1
+    else:
+        end_page = args.end_page
     base_url = 'https://tululu.org/'
     category_url = urljoin(base_url, 'l55/')
-    for page_num in range(1, 5):
+    for page_num in range(start_page, end_page):
         page_exists = True
         while True:
             try:
