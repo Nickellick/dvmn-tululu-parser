@@ -6,13 +6,13 @@ import time
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 import requests
-from urllib.parse import urlencode, urljoin, urlparse
+from urllib.parse import urljoin, urlparse
 
 
 def init_argparse():
     parser = argparse.ArgumentParser(description='Tululu.org parser')
-    parser.add_argument('start_id', type=int, help='Start book id')
-    parser.add_argument('end_id', type=int, help='Stop book id (including)')
+    parser.add_argument('start_id', type=int, help='Start book page')
+    parser.add_argument('end_id', type=int, help='Stop book page (excluding)')
     return parser.parse_args()
 
 
