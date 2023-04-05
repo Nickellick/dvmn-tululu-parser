@@ -13,8 +13,8 @@ from tululu import download_image, download_txt, get_html, parse_book_page
 
 def init_argparse():
     parser = argparse.ArgumentParser(description='Tululu.org parser')
-    parser.add_argument('--start_page', type=int, help='Start book id')
-    parser.add_argument('--end_page', type=int, help='Stop book id (including)')
+    parser.add_argument('--start_page', type=int, help='Start book page')
+    parser.add_argument('--end_page', type=int, help='Stop book page (excluding)')
     return parser.parse_args()
 
 
