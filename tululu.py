@@ -11,7 +11,6 @@ from urllib.parse import urljoin, urlparse
 
 def handle_connection(func):
     def wrapper(*args, **kwargs):
-        print(kwargs.keys())
         con_error_message = kwargs.pop('con_error_message')
         http_error_message = kwargs.pop('http_error_message')
         result = None
@@ -39,7 +38,7 @@ def init_argparse():
 
 def check_for_redirect(checked_response):
     if checked_response.history:
-        raise requests.HTTPError(
+        raise requests.exceptions.HTTPError(
             "Redirect! Probably book is not available"
             )
 

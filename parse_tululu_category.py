@@ -1,15 +1,13 @@
 import argparse
 import json
-import os
 import sys
-import time
 
 from bs4 import BeautifulSoup
 import requests
 from urllib.parse import urljoin
 
 from tululu import download_book, get_html
-from tululu import handle_connection,
+from tululu import handle_connection
 
 
 def init_argparse():
@@ -21,7 +19,6 @@ def init_argparse():
     parser.add_argument('--skip_imgs', help='Skip book cover download)')
     parser.add_argument('--skip_txt', help='Skip book cover download)')
     return parser.parse_args()
-
 
 
 @handle_connection
@@ -68,6 +65,7 @@ def main():
         if not abs_links:
             continue
         for link in abs_links:
+            print(link)
             book_id = link.split('/')[-2][1::]
             txt_url = urljoin(base_url, 'txt.php')
             params = {
@@ -76,8 +74,7 @@ def main():
             prep_req = requests.models.PreparedRequest()
             prep_req.prepare_url(txt_url, params)
             dl_txt_link = prep_req.url
-            
-            book = download_book(url, dl_txt_link, book_id,
+            book = download_book(link, dl_txt_link, book_id,
                                  con_error_message='Error! Can\'t reach '
                                  'server. Trying again...',
                                  http_error_message='Error! Can\'t find book '
@@ -90,7 +87,7 @@ def main():
             print(f'Succesfully downloaded book #{book_id}')
 
     with open('comments.json', 'w', encoding='utf-8') as commentfile:
-        json.dump(book, commentfile, ensure_ascii=False, indent=2)
+        json.dump(jsons, commentfile, ensure_ascii=False, indent=2)
 
 
 if __name__ == '__main__':
