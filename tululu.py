@@ -139,12 +139,18 @@ def get_html(url):
 
 
 @handle_connection
-def download_book(book_url, txt_url, book_id,
+def download_book(book_url, txt_url, book_id, path,
+                  skip_images=False,
+                  skip_txt=False,
                   **kwargs):
     page = get_html(book_url)
     book = parse_book_page(book_url, page)
-    download_txt(txt_url, f'{book_id}. {book["title"]}')
-    download_image(book['cover'], str(book_id))
+    if not skip_txt:
+        txt_path = os.path.join(path, 'books')
+        download_txt(txt_url, f'{book_id}. {book["title"]}', folder=txt_path)
+    if not skip_images:
+        img_path = os.path.join(path, 'covers')
+        download_image(book['cover'], str(book_id), folder=img_path)
     return book
 
 

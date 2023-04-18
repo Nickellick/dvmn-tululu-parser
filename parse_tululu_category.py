@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import sys
 
 from bs4 import BeautifulSoup
@@ -16,8 +17,13 @@ def init_argparse():
     parser.add_argument('--end_page', type=int, help='Stop book page'
                         '(excluding)')
     parser.add_argument('--dest_folder', type=str, help='Destination folder')
-    parser.add_argument('--skip_imgs', help='Skip book cover download)')
-    parser.add_argument('--skip_txt', help='Skip book cover download)')
+    parser.add_argument('--json_path', type=str, help='Comments json path')
+    parser.add_argument('--skip_img', help='Skip book cover download)',
+                        action='store_true'
+                        )
+    parser.add_argument('--skip_txt', help='Skip book text download)',
+                        action='store_true'
+                        )
     return parser.parse_args()
 
 
@@ -36,17 +42,34 @@ def get_books_from_page(base_url, url, **kwargs):
 
 def main():
     last_page = 701
+
     args = init_argparse()
+
+    start_page = args.start_page
+
     if not args.start_page:
         print('Start id is not specified', file=sys.stderr)
         exit(1)
-    start_page = args.start_page
+    if not args.dest_folder:
+        path = 'result/'
+    else:
+        path = args.dest_folder
+
     if not args.end_page:
         end_page = last_page + 1
     else:
         end_page = args.end_page
+
     base_url = 'https://tululu.org/'
+
     category_url = urljoin(base_url, 'l55/')
+
+    if not args.json_path:
+        json_path = os.path.join(path, 'comments.json')
+        os.makedirs(path, exist_ok=True)
+    else:
+        json_path = args.json_path
+
     jsons = {}
     for page_num in range(start_page, end_page):
         if page_num == 1:
@@ -75,6 +98,9 @@ def main():
             prep_req.prepare_url(txt_url, params)
             dl_txt_link = prep_req.url
             book = download_book(link, dl_txt_link, book_id,
+                                 path,
+                                 skip_images=args.skip_img,
+                                 skip_txt=args.skip_txt,
                                  con_error_message='Error! Can\'t reach '
                                  'server. Trying again...',
                                  http_error_message='Error! Can\'t find book '
@@ -86,7 +112,7 @@ def main():
             jsons[book_id] = book['comments']
             print(f'Succesfully downloaded book #{book_id}')
 
-    with open('comments.json', 'w', encoding='utf-8') as commentfile:
+    with open(json_path, 'w', encoding='utf-8') as commentfile:
         json.dump(jsons, commentfile, ensure_ascii=False, indent=2)
 
 
