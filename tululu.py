@@ -6,7 +6,28 @@ import time
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 import requests
-from urllib.parse import urlencode, urljoin, urlparse
+from urllib.parse import urljoin, urlparse
+
+
+def handle_connection(func):
+    def wrapper(*args, **kwargs):
+        print(kwargs.keys())
+        con_error_message = kwargs.pop('con_error_message')
+        http_error_message = kwargs.pop('http_error_message')
+        result = None
+        while True:
+            try:
+                result = func(*args, **kwargs)
+                break
+            except requests.exceptions.ConnectionError:
+                print(con_error_message, file=sys.stderr)
+                time.sleep(5)
+                continue
+            except requests.exceptions.HTTPError:
+                print(http_error_message)
+                break
+        return result
+    return wrapper
 
 
 def init_argparse():
@@ -118,11 +139,20 @@ def get_html(url):
     return response.text
 
 
+@handle_connection
+def download_book(book_url, txt_url, book_id,
+                  **kwargs):
+    page = get_html(book_url)
+    book = parse_book_page(book_url, page)
+    download_txt(txt_url, f'{book_id}. {book["title"]}')
+    download_image(book['cover'], str(book_id))
+    return book
+
+
 def main():
     args = init_argparse()
     base_url = 'https://tululu.org/'
     for book_id in range(args.start_id, args.end_id + 1):
-        id_exists = True
         url = urljoin(base_url, f'/b{book_id}/')
         txt_url = urljoin(base_url, 'txt.php')
         params = {
@@ -131,30 +161,13 @@ def main():
         prep_req = requests.models.PreparedRequest()
         prep_req.prepare_url(txt_url, params)
         dl_txt_link = prep_req.url
-        while True:
-            try:
-                page = get_html(url)
-                book = parse_book_page(url, page)
-                download_txt(dl_txt_link, f'{book_id}. {book["title"]}')
-                download_image(book['cover'], str(book_id))
-                break
-            except requests.exceptions.ConnectionError:
-                print(
-                    'Error! Can\'t reach server. Trying again...',
-                    file=sys.stderr
-                )
-                time.sleep(5)
-                continue
-            except requests.HTTPError:
-                print(
-                    f'Error! Can\'t find book with id {book_id}\n\n',
-                    file=sys.stderr
-                )
-                id_exists = False
-                break
-        if not id_exists:
+        book = download_book(url, dl_txt_link, book_id,
+                             con_error_message='Error! Can\'t reach server. Trying again...',
+                             http_error_message=f'Error! Can\'t find book with id {book_id}\n\n'
+                             )
+        if not book:
             continue
- 
+
         print(f'Author: {book["author"]}')
         print(f'Title: {book["title"]}')
         print(f'Genres: {", ".join(book["genres"])}')
