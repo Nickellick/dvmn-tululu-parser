@@ -8,14 +8,33 @@ from bs4 import BeautifulSoup
 import requests
 from urllib.parse import urljoin
 
-from tululu import download_image, download_txt, get_html, parse_book_page
+from tululu import download_book, get_html
+from tululu import handle_connection,
 
 
 def init_argparse():
     parser = argparse.ArgumentParser(description='Tululu.org parser')
     parser.add_argument('--start_page', type=int, help='Start book page')
-    parser.add_argument('--end_page', type=int, help='Stop book page (excluding)')
+    parser.add_argument('--end_page', type=int, help='Stop book page'
+                        '(excluding)')
+    parser.add_argument('--dest_folder', type=str, help='Destination folder')
+    parser.add_argument('--skip_imgs', help='Skip book cover download)')
+    parser.add_argument('--skip_txt', help='Skip book cover download)')
     return parser.parse_args()
+
+
+
+@handle_connection
+def get_books_from_page(base_url, url, **kwargs):
+    html = get_html(url)
+    soup = BeautifulSoup(html, 'lxml')
+    books_selector = '.d_book'
+    link_selector = 'a'
+    rel_links = [book.select_one(link_selector)['href']
+                 for book in soup.select(books_selector)]
+    abs_links = [urljoin(base_url, rel_link)
+                 for rel_link in rel_links]
+    return abs_links
 
 
 def main():
@@ -31,42 +50,24 @@ def main():
         end_page = args.end_page
     base_url = 'https://tululu.org/'
     category_url = urljoin(base_url, 'l55/')
+    jsons = {}
     for page_num in range(start_page, end_page):
-        page_exists = True
-        while True:
-            try:
-                if page_num == 1:
-                    html = get_html(category_url)
-                else:
-                    html = get_html(urljoin(category_url, f'{page_num}'))
-                soup = BeautifulSoup(html, 'lxml')
-                books_selector = '.d_book'
-                link_selector = 'a'
-                rel_links = [i.select_one(link_selector)['href']
-                             for i in soup.select(books_selector)]
-                abs_links = [urljoin(base_url, rel_link)
-                             for rel_link in rel_links]
-                break
-            except requests.exceptions.ConnectionError:
-                print(
-                    f'Error while fetching category page #{page_num}!\n'\
-                    'Can\'t reach server. Trying again...',
-                    file=sys.stderr
-                )
-                time.sleep(5)
-                continue
-            except requests.exceptions.HTTPError:
-                print(
-                    f'Error while fetching category page #{page_num}!\n'\
-                    'Page does not exists. Skipping...',
-                    file=sys.stderr
-                )
-                page_exists = False
-                break
-        if not page_exists:
+        if page_num == 1:
+            url = category_url
+        else:
+            url = urljoin(category_url, f'{page_num}')
+        abs_links = get_books_from_page(base_url, url,
+                                        con_error_message='Error while '
+                                        'fetching category page '
+                                        f'#{page_num}!\n'
+                                        'Can\'t reach server. Trying again...',
+                                        http_error_message='Error while '
+                                        f'fetching category page #{page_num}!'
+                                        '\n Page does not exists. '
+                                        'Skipping...',)
+        if not abs_links:
             continue
         for link in abs_links:
-            id_exists = True
             book_id = link.split('/')[-2][1::]
             txt_url = urljoin(base_url, 'txt.php')
             params = {
@@ -75,38 +76,22 @@ def main():
             prep_req = requests.models.PreparedRequest()
             prep_req.prepare_url(txt_url, params)
             dl_txt_link = prep_req.url
-            while True:
-                try:
-                    page = get_html(link)
-                    book = parse_book_page(link, page)
-                    download_txt(dl_txt_link, f'{book_id}. {book["title"]}')
-                    download_image(book['cover'], str(book_id))
-                    break
-                except requests.exceptions.ConnectionError:
-                    print(
-                        f'Error while fetching book #{book_id}!\n'
-                        'Can\'t reach server. Trying again...',
-                        file=sys.stderr
-                    )
-                    time.sleep(5)
-                    continue
-                except requests.HTTPError:
-                    print(
-                        f'Error while fetching book #{book_id}!\n'
-                        'Book does not exists. Skipping...',
-                        file=sys.stderr
-                    )
-                    id_exists = False
-                    break
-            if not id_exists:
+            
+            book = download_book(url, dl_txt_link, book_id,
+                                 con_error_message='Error! Can\'t reach '
+                                 'server. Trying again...',
+                                 http_error_message='Error! Can\'t find book '
+                                 f'with id {book_id}\n\n'
+                                 )
+            if not book:
                 continue
-            book.pop('cover')
-            json_folder = 'json'
-            os.makedirs(json_folder, exist_ok=True)
-            path = os.path.join(json_folder, f'{book_id}.json')
-            with open(path, 'w', encoding='utf-8') as bookfile:
-                json.dump(book, bookfile, ensure_ascii=False, indent=2)
+
+            jsons[book_id] = book['comments']
             print(f'Succesfully downloaded book #{book_id}')
+
+    with open('comments.json', 'w', encoding='utf-8') as commentfile:
+        json.dump(book, commentfile, ensure_ascii=False, indent=2)
+
 
 if __name__ == '__main__':
     main()

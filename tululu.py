@@ -162,8 +162,10 @@ def main():
         prep_req.prepare_url(txt_url, params)
         dl_txt_link = prep_req.url
         book = download_book(url, dl_txt_link, book_id,
-                             con_error_message='Error! Can\'t reach server. Trying again...',
-                             http_error_message=f'Error! Can\'t find book with id {book_id}\n\n'
+                             con_error_message='Error! Can\'t reach '
+                             'server. Trying again...',
+                             http_error_message='Error! Can\'t find book '
+                             f'with id {book_id}\n\n'
                              )
         if not book:
             continue
