@@ -16,14 +16,14 @@ def init_argparse():
     parser.add_argument('--start_page', type=int, help='Start book page')
     parser.add_argument('--end_page', type=int, help='Stop book page'
                         '(excluding)')
-    parser.add_argument('--dest_folder', type=str, help='Destination folder')
-    parser.add_argument('--json_path', type=str, help='Comments json path')
+    parser.add_argument('--dest_folder', type=str, help='Destination folder',
+                        default='result')
+    parser.add_argument('--json_path', type=str, help='Comments json path',
+                        default='result/comments.json')
     parser.add_argument('--skip_img', help='Skip book cover download)',
-                        action='store_true'
-                        )
+                        action='store_true')
     parser.add_argument('--skip_txt', help='Skip book text download)',
-                        action='store_true'
-                        )
+                        action='store_true')
     return parser.parse_args()
 
 
@@ -50,10 +50,6 @@ def main():
     if not args.start_page:
         print('Start id is not specified', file=sys.stderr)
         exit(1)
-    if not args.dest_folder:
-        path = 'result/'
-    else:
-        path = args.dest_folder
 
     if not args.end_page:
         end_page = last_page + 1
@@ -64,11 +60,7 @@ def main():
 
     category_url = urljoin(base_url, 'l55/')
 
-    if not args.json_path:
-        json_path = os.path.join(path, 'comments.json')
-        os.makedirs(path, exist_ok=True)
-    else:
-        json_path = args.json_path
+    os.makedirs(args.dest_folder, exist_ok=True)
 
     comments = {}
     for page_num in range(start_page, end_page):
@@ -94,7 +86,7 @@ def main():
             prep_req.prepare_url(txt_url, params)
             dl_txt_link = prep_req.url
             book = download_book(link, dl_txt_link, book_id,
-                                 path,
+                                 args.dest_folder,
                                  skip_images=args.skip_img,
                                  skip_txt=args.skip_txt,
                                  con_error_message='Error! Can\'t reach '
@@ -108,7 +100,7 @@ def main():
             comments[book_id] = book['comments']
             print(f'Succesfully downloaded book #{book_id}')
 
-    with open(json_path, 'w', encoding='utf-8') as commentfile:
+    with open(args.json_path, 'w', encoding='utf-8') as commentfile:
         json.dump(comments, commentfile, ensure_ascii=False, indent=2)
 
 
