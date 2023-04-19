@@ -72,10 +72,7 @@ def main():
 
     comments = {}
     for page_num in range(start_page, end_page):
-        if page_num == 1:
-            url = category_url
-        else:
-            url = urljoin(category_url, f'{page_num}')
+        url = urljoin(category_url, f'{page_num}')
         abs_links = get_books_from_page(base_url, url,
                                         con_error_message='Error while '
                                         'fetching category page '
