@@ -70,7 +70,7 @@ def main():
     else:
         json_path = args.json_path
 
-    jsons = {}
+    comments = {}
     for page_num in range(start_page, end_page):
         if page_num == 1:
             url = category_url
@@ -109,11 +109,11 @@ def main():
             if not book:
                 continue
 
-            jsons[book_id] = book['comments']
+            comments[book_id] = book['comments']
             print(f'Succesfully downloaded book #{book_id}')
 
     with open(json_path, 'w', encoding='utf-8') as commentfile:
-        json.dump(jsons, commentfile, ensure_ascii=False, indent=2)
+        json.dump(comments, commentfile, ensure_ascii=False, indent=2)
 
 
 if __name__ == '__main__':
