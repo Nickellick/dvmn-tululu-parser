@@ -28,7 +28,7 @@ def init_argparse():
 
 
 @handle_connection
-def get_books_from_page(base_url, url, **kwargs):
+def parse_booklinks_from_url(base_url, url, **kwargs):
     html = get_html(url)
     soup = BeautifulSoup(html, 'lxml')
     books_selector = '.d_book'
@@ -73,7 +73,7 @@ def main():
     comments = {}
     for page_num in range(start_page, end_page):
         url = urljoin(category_url, f'{page_num}')
-        abs_links = get_books_from_page(base_url, url,
+        abs_links = parse_booklinks_from_url(base_url, url,
                                         con_error_message='Error while '
                                         'fetching category page '
                                         f'#{page_num}!\n'
