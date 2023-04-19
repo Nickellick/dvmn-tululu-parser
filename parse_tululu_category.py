@@ -85,7 +85,6 @@ def main():
         if not abs_links:
             continue
         for link in abs_links:
-            print(link)
             book_id = link.split('/')[-2][1::]
             txt_url = urljoin(base_url, 'txt.php')
             params = {
