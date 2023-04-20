@@ -98,7 +98,9 @@ def main():
             if not book:
                 continue
 
-            books.append(book)
+            books.append({
+                book_id: book
+            })
             print(f'Succesfully downloaded book #{book_id}')
 
     with open(args.json_path, 'w', encoding='utf-8') as bookfile:
