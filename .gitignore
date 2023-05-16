@@ -5,6 +5,7 @@ comments/
 txt/
 images/
 json/
+result/
 *.svg
 *.txt
 
