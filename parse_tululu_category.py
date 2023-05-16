@@ -19,7 +19,7 @@ def init_argparse():
     parser.add_argument('--dest_folder', type=str, help='Destination folder',
                         default='result')
     parser.add_argument('--json_path', type=str, help='Comments json path',
-                        default='result/comments.json')
+                        default='result/books.json')
     parser.add_argument('--skip_img', help='Skip book cover download)',
                         action='store_true')
     parser.add_argument('--skip_txt', help='Skip book text download)',
@@ -62,7 +62,8 @@ def main():
 
     os.makedirs(args.dest_folder, exist_ok=True)
 
-    comments = {}
+    books = []
+    
     for page_num in range(start_page, end_page):
         url = urljoin(category_url, f'{page_num}')
         abs_links = parse_booklinks_from_url(base_url, url,
@@ -97,11 +98,13 @@ def main():
             if not book:
                 continue
 
-            comments[book_id] = book['comments']
+            books.append({
+                book_id: book
+            })
             print(f'Succesfully downloaded book #{book_id}')
 
-    with open(args.json_path, 'w', encoding='utf-8') as commentfile:
-        json.dump(comments, commentfile, ensure_ascii=False, indent=2)
+    with open(args.json_path, 'w', encoding='utf-8') as bookfile:
+        json.dump(books, bookfile, ensure_ascii=False, indent=2)
 
 
 if __name__ == '__main__':
