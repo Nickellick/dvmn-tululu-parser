@@ -6,6 +6,7 @@ txt/
 images/
 json/
 result/
+index.html
 *.svg
 *.txt
 
