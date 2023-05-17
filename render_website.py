@@ -18,6 +18,7 @@ with open('result/books.json', 'r') as file:
 for book in books:
     ext = book['cover'].split('.')[-1]
     book['cover'] = f'result/covers/{book["id"]}.{ext}'
+    book['alt'] = f'{book["author"]} {book["title"]}'
 
 
 rendered_page = template.render(
