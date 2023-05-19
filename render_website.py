@@ -3,6 +3,8 @@ import os
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from livereload import Server
+from more_itertools import chunked
+
 
 def load_template(path='template.html'):
     env = Environment(
@@ -23,7 +25,7 @@ def localize_book_cover(books, path='result/covers'):
 def on_reload(books):
     template = load_template()
     rendered_page = template.render(
-        books=books
+        book_chunks=chunked(books, 2)
     )
     with open('index.html', 'w', encoding='utf8') as file:
         file.write(rendered_page)
