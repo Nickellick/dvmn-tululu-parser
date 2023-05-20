@@ -38,20 +38,26 @@ def on_reload(books):
     books_paged = chunked(books, books_per_page)
     total_pages = math.ceil(len(books) / books_per_page)
     for i, books_page in enumerate(books_paged):
-        if i == 0:
-            pages = [1, 2, 3]
-            paginator_selector = 0
-        elif i == total_pages - 1:
-            pages = [total_pages - 2, total_pages - 1, total_pages]
-            paginator_selector = 2
+        if i < 2:
+            pages = [1, 2, 3, 4, 5]
+            selected_page = i
+        elif i > total_pages - 3:
+            pages = [
+                total_pages - 4,
+                total_pages - 3,
+                total_pages - 2,
+                total_pages - 1,
+                total_pages
+                ]
+            selected_page = len(pages) - total_pages + i
         else:
-            pages = [i, i+1, i+2]
-            paginator_selector = 3
+            pages = [i - 1, i, i + 1, i + 2, i + 3]
+            selected_page = 2
         rel_page_links = [f'/pages/index{page}.html' for page in pages]
         rendered_page = template.render(
             book_chunks=chunked(books_page, 2), 
             rel_page_links=rel_page_links,
-            paginator_selector=paginator_selector,
+            selected_page=selected_page,
             pages=pages
         )
         os.makedirs('pages', exist_ok=True)
