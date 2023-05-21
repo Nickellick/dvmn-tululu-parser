@@ -41,6 +41,8 @@ def on_reload(books):
         if i < 2:
             pages = [1, 2, 3, 4, 5]
             selected_page = i
+            prev_page = selected_page - 1 if i != 0 else None
+            next_page = selected_page + 1
         elif i > total_pages - 3:
             pages = [
                 total_pages - 4,
@@ -50,14 +52,20 @@ def on_reload(books):
                 total_pages
                 ]
             selected_page = len(pages) - total_pages + i
+            prev_page = selected_page - 1
+            next_page = selected_page + 1 if i != total_pages - 1 else None
         else:
             pages = [i - 1, i, i + 1, i + 2, i + 3]
             selected_page = 2
+            prev_page = selected_page - 1
+            next_page = selected_page + 1
         rel_page_links = [f'/pages/index{page}.html' for page in pages]
         rendered_page = template.render(
-            book_chunks=chunked(books_page, 2), 
+            book_chunks=chunked(books_page, 2),
             rel_page_links=rel_page_links,
             selected_page=selected_page,
+            prev_page=prev_page,
+            next_page=next_page,
             pages=pages
         )
         os.makedirs('pages', exist_ok=True)
