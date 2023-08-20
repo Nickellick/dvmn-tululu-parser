@@ -32,7 +32,7 @@ def add_text_link(books, path='../result/books/'):
         ))
 
 
-def on_reload(books):
+def render_pages(books):
     books_per_page = 20
     template = load_template()
     books_paged = chunked(books, books_per_page)
@@ -81,8 +81,8 @@ def main():
     localize_book_cover(books)
     add_text_link(books)
     server = Server()
-    on_reload(books)
-    server.watch('template.html', lambda: on_reload(books))
+    render_pages(books)
+    server.watch('template.html', lambda: render_pages(books))
     server.serve(root='.', default_filename='pages/index1.html')
 
 
