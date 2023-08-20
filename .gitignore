@@ -6,7 +6,6 @@ images/
 json/
 index.html
 *.svg
-*.txt
 
 
 # Byte-compiled / optimized / DLL files
