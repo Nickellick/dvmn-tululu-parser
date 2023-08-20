@@ -59,7 +59,7 @@ def on_reload(books):
             selected_page = 2
             prev_page = selected_page - 1
             next_page = selected_page + 1
-        rel_page_links = [f'/pages/index{page}.html' for page in pages]
+        rel_page_links = [f'../pages/index{page}.html' for page in pages]
         rendered_page = template.render(
             book_chunks=chunked(books_page, 2),
             rel_page_links=rel_page_links,
