@@ -11,13 +11,13 @@
   <body>
     <nav aria-label="Page navigation example" style="margin: 20px">
       <ul class="pagination justify-content-center">
-        <li class="page-item{{" disabled" if not prev_page}}"><a class="page-link" href="{{ rel_page_links[prev_page] }}">Предыдущая страница</a></li>
+        <li class="page-item{{" disabled" if prev_page is None}}"><a class="page-link" href="{{ rel_page_links[prev_page] }}">Предыдущая страница</a></li>
         <li class="page-item{{" active" if selected_page == 0}}"><a class="page-link" href="{{ rel_page_links[0] }}">{{ pages[0] }}</a></li>
         <li class="page-item{{" active" if selected_page == 1}}"><a class="page-link" href="{{ rel_page_links[1] }}">{{ pages[1] }}</a></li>
         <li class="page-item{{" active" if selected_page == 2}}"><a class="page-link" href="{{ rel_page_links[2] }}">{{ pages[2] }}</a></li>
         <li class="page-item{{" active" if selected_page == 3}}"><a class="page-link" href="{{ rel_page_links[3] }}">{{ pages[3] }}</a></li>
         <li class="page-item{{" active" if selected_page == 4}}"><a class="page-link" href="{{ rel_page_links[4] }}">{{ pages[4] }}</a></li>
-        <li class="page-item{{" disabled" if not next_page}}"><a class="page-link" href="{{ rel_page_links[next_page] }}">Следующая страница</a></li>
+        <li class="page-item{{" disabled" if next_page is None}}"><a class="page-link" href="{{ rel_page_links[next_page] }}">Следующая страница</a></li>
       </ul>
     </nav>
     {% for book_chunk in book_chunks %}
