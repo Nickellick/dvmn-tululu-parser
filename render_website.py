@@ -1,3 +1,4 @@
+import argparse
 import json
 import math
 import os
@@ -6,6 +7,20 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from livereload import Server
 from more_itertools import chunked
 from urllib.parse import quote
+
+
+def init_argparse():
+    parser = argparse.ArgumentParser(
+        description='Tool for rendering tululu-restyle website with '
+        'simple integrated web server'
+    )
+    parser.add_argument(
+        '-j',
+        '--json',
+        help='path to desc json (optional), defaults to books.json',
+        default='books.json'
+    )
+    return parser.parse_args()
 
 
 def load_template(path='template.html'):
@@ -75,8 +90,9 @@ def render_pages(books):
 
 
 def main():
+    args = init_argparse()
     books = {}
-    with open('result/books.json', 'r') as file:
+    with open(args.json, 'r') as file:
         books = json.load(file)
     localize_book_cover(books)
     add_text_link(books)
